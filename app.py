@@ -1313,7 +1313,7 @@ def start_scheduler():
 # ---------------------------------------------------------------------------
 @app.get("/")
 def index():
-    response = send_from_directory(STATIC_DIR, "index.html")
+    response = send_from_directory(BASE_DIR, "index.html")
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
 
@@ -1374,3 +1374,4 @@ if __name__ == "__main__":
         app.run(host=HOST, port=PORT, threaded=True, use_reloader=False)
     except OSError as exc:
         raise SystemExit("启动失败：端口 %s 可能已被占用（%s）" % (PORT, exc))
+

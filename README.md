@@ -195,7 +195,7 @@ X-Token: abc123
 
 ```text
 autotest-platform/
-├─ index.html              # GitHub Pages 入口（静态演示）
+├─ index.html              # GitHub Pages 入口 / Flask 首页
 ├─ .nojekyll               # 让 GitHub Pages 原样托管 static 等目录
 ├─ app.py                  # 完整 Flask 后端（本地/服务器运行）
 ├─ requirements.txt        # Python 依赖
@@ -203,7 +203,6 @@ autotest-platform/
 ├─ start.sh                # Linux/macOS 一键启动
 ├─ screenshots/            # README 截图
 └─ static/
-   ├─ index.html           # Flask 页面模板
    ├─ app.js               # 前端交互
    ├─ demo.js              # GitHub Pages 演示模式（localStorage 模拟）
    └─ chart.umd.min.js     # Chart.js 本地文件
