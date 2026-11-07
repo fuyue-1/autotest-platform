@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+autotest.db
+autotest.db-wal
+autotest.db-shm
+.env
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+.edge-*/

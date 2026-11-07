@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自动化测试平台 | 接口自动化测试与可视化报告</title>
+<meta name="description" content="一个轻量的接口自动化测试平台：管理接口、报文、组合场景与测试集，执行 HTTP/TCP 测试并生成可视化报告。">
+<script src="./static/chart.umd.min.js"></script>
+<style>
+:root{--primary:#2f6fed;--bg:#f0f2f5;--side:#1f2d3d;--ok:#52c41a;--fail:#f5222d;--warn:#fa8c16}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Microsoft YaHei",system-ui,sans-serif}
+body{background:var(--bg);font-size:14px;color:#333}
+/* 登录页 */
+#loginPage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+ background:linear-gradient(135deg,#1f2d3d 0%,#2f6fed 100%)}
+.login-box{background:#fff;border-radius:10px;padding:40px;width:380px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.login-box h2{text-align:center;margin-bottom:6px;color:var(--primary)}
+.login-box p{text-align:center;color:#999;margin-bottom:24px}
+.login-box input{width:100%;padding:11px 12px;border:1px solid #dcdfe6;border-radius:6px;margin-bottom:16px;font-size:14px}
+.login-box button{width:100%;padding:11px;border:none;border-radius:6px;background:var(--primary);color:#fff;font-size:15px;cursor:pointer}
+.login-box .tip{margin-top:14px;text-align:center;color:#999;font-size:12px}
+.login-box .switch{text-align:center;margin-top:10px}
+.login-box .switch a{color:var(--primary);cursor:pointer;font-size:13px}
+/* 主布局 */
+#mainPage{display:none}
+header{background:#fff;height:56px;display:flex;align-items:center;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+header h1{font-size:18px;color:var(--primary);flex:1}
+header .user{color:#666;margin-right:16px}
+header button{padding:6px 14px;border:1px solid #dcdfe6;background:#fff;border-radius:6px;cursor:pointer}
+.layout{display:flex;min-height:calc(100vh - 56px)}
+nav{width:200px;background:var(--side);color:#bfcbd9;padding:12px 0;flex-shrink:0}
+nav .item{padding:12px 24px;cursor:pointer;transition:.2s;font-size:14px}
+nav .item:hover,nav .item.active{background:var(--primary);color:#fff}
+main{flex:1;padding:20px;overflow:auto}
+.panel{display:none;background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.panel.active{display:block}
+.panel h3{margin-bottom:16px;font-size:16px;border-left:4px solid var(--primary);padding-left:10px}
+.toolbar{margin-bottom:14px;display:flex;gap:10px;align-items:center}
+.toolbar input[type=text]{padding:8px 12px;border:1px solid #dcdfe6;border-radius:6px;width:220px}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;color:#fff;background:var(--primary);font-size:13px}
+.btn.gray{background:#909399}.btn.red{background:var(--fail)}.btn.green{background:var(--ok)}.btn.orange{background:var(--warn)}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border-bottom:1px solid #ebeef5;padding:10px 8px;text-align:left;font-size:13px}
+th{background:#fafafa;color:#606266}
+tr:hover td{background:#f5f7fa}
+.tag{padding:2px 10px;border-radius:10px;font-size:12px}
+.tag.ok{background:#f0f9eb;color:var(--ok)}.tag.fail{background:#fef0f0;color:var(--fail)}
+.tag.warn{background:#fdf6ec;color:var(--warn)}.tag.info{background:#ecf5ff;color:var(--primary)}
+.op{color:var(--primary);cursor:pointer;margin-right:10px}
+.op.danger{color:var(--fail)}
+/* 弹窗 */
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.mask.show{display:flex}
+.dialog{background:#fff;border-radius:8px;width:520px;max-height:85vh;overflow:auto;padding:24px}
+.dialog.wide{width:900px;max-width:95vw}
+.dialog .hint{color:#999;font-size:12px;margin-top:4px}
+.login-box .error{color:#f5222d;font-size:13px;min-height:18px;text-align:center;margin-bottom:6px}
+.table-wrap{overflow:auto}
+pre.detail{white-space:pre-wrap;word-break:break-all;background:#fafafa;padding:8px;border-radius:4px;max-height:160px;overflow:auto;font-family:Consolas,monospace;font-size:12px}
+.dialog.wide table th,.dialog.wide table td{vertical-align:top}
+.dialog.wide table td:first-child,.dialog.wide table td:nth-child(2),.dialog.wide table td:nth-child(5){white-space:nowrap}
+.dialog.wide table td:last-child{min-width:300px}
+.dialog h4{margin-bottom:18px;font-size:16px}
+.dialog label{display:block;margin:10px 0 4px;color:#606266;font-size:13px}
+.dialog input,.dialog select,.dialog textarea{width:100%;padding:8px 10px;border:1px solid #dcdfe6;border-radius:6px;font-size:13px}
+.dialog textarea{min-height:90px;font-family:Consolas,monospace}
+.dialog .foot{text-align:right;margin-top:20px}
+.dialog .foot button{margin-left:10px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+/* 格式化工具 */
+.fmt-wrap textarea{width:100%;min-height:220px;font-family:Consolas,monospace;font-size:13px;padding:10px;border:1px solid #dcdfe6;border-radius:6px}
+.fmt-wrap .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* 报表 */
+.chart-box{height:300px;margin-top:10px}
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card .num{font-size:28px;font-weight:700}
+.stat-card .label{color:#909399;margin-top:4px;font-size:13px}
+.msg-tip{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#333;color:#fff;
+ padding:10px 24px;border-radius:6px;z-index:999;display:none}
+.empty{text-align:center;color:#999;padding:30px}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>自动化测试平台</h2>
+    <p>Automation Test Platform v1.1</p>
+    <input id="loginUser" placeholder="用户名" value="admin">
+    <input id="loginPwd" type="password" placeholder="密码" value="admin123">
+    <div class="error" id="loginError"></div>
+    <button onclick="doLogin()">登 录</button>
+    <div class="switch">还没有账号？<a onclick="doRegister()">注册新账号</a></div>
+    <p class="tip" id="loginTip">演示账号：admin / admin123（首位注册者自动为管理员）</p>
+  </div>
+</div>
+
+<!-- 主页面 -->
+<div id="mainPage">
+<header>
+  <h1>自动化测试平台 v1.1</h1>
+  <span class="user" id="whoami"></span>
+  <button onclick="doLogout()">退出登录</button>
+</header>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+</div>
+
+<div class="mask" id="mask"><div class="dialog" id="dialog"></div></div>
+<div class="msg-tip" id="msgTip"></div>
+
+<script src="./static/demo.js"></script>
+<script src="./static/app.js"></script>
+</body>
+</html>
